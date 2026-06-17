@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPulse Lesotho — Smart Farming for Basotho Farmers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --green: #16a34a;
+            --green-dark: #15803d;
+            --blue: #0066cc;
+            --blue-light: #dbeafe;
+            --gold: #f59e0b;
+            --red: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #1f2937;
+            --shadow: 0 4px 6px rgba(0,0,0,0.08);
+            --radius: 0.75rem;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+            min-height: 100vh;
+            color: var(--gray-900);
+            padding-bottom: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 3px solid var(--blue);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; }
+
+        .logo {
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1.75rem;
+        }
+
+        .logo-text h1 { font-size: 1.35rem; font-weight: bold; }
+        .logo-text p { font-size: 0.8rem; color: var(--gray-500); }
+        .logo-text .sesotho { font-style: italic; color: var(--green); font-size: 0.75rem; }
+
+        .header-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .info-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--gray-500); }
+
+        .notification-badge { position: relative; cursor: pointer; }
+        .badge {
+            position: absolute; top: -4px; right: -4px;
+            background: var(--red); color: white; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            overflow-x: auto;
+        }
+
+        .nav-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-tab:hover { color: var(--green); background: var(--gray-50); }
+        .nav-tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 600; }
+
+        /* Container & Sections */
+        .container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .panel {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-title {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 1.15rem; font-weight: bold; margin-bottom: 1.25rem;
+        }
+
+        .panel-subtitle { font-size: 0.85rem; color: var(--gray-500); margin-top: -0.75rem; margin-bottom: 1rem; }
+
+        /* Weather Cards */
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .weather-card {
+            background: white; border-radius: var(--radius); box-shadow: var(--shadow);
+            padding: 1rem; display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        .weather-icon {
+            width: 40px; height: 40px; border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+
+        .weather-icon.temperature { background: #dbeafe; color: #2563eb; }
+        .weather-icon.humidity { background: #cffafe; color: #0891b2; }
+        .weather-icon.wind { background: #f3f4f6; color: #6b7280; }
+        .weather-icon.rainfall { background: #dbeafe; color: #2563eb; }
+        .weather-icon.conditions { background: #fef3c7; color: #d97706; }
+
+        .weather-info h3 { font-size: 0.8rem; color: var(--gray-500); }
+        .weather-info p { font-size: 1.15rem; font-weight: bold; }
+
+        /* Grids */
+        .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .three-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+
+        /* Forms */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--gray-700); margin-bottom: 0.4rem; }
+        .form-group select, .form-group input, .form-group textarea {
+            width: 100%; padding: 0.7rem; border: 1px solid var(--gray-200);
+            border-radius: 0.5rem; font-size: 0.875rem; transition: all 0.2s;
+        }
+        .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+        }
+
+        .btn {
+            padding: 0.7rem 1.25rem; border: none; border-radius: 0.5rem;
+            font-weight: 600; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+
+        .btn-primary { background: var(--green); color: white; width: 100%; justify-content: center; }
+        .btn-primary:hover:not(:disabled) { background: var(--green-dark); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-blue { background: var(--blue); color: white; }
+        .btn-blue:hover { background: #0052a3; }
+        .btn-outline { background: white; border: 1px solid var(--gray-200); color: var(--gray-700); }
+        .btn-outline:hover { border-color: var(--green); color: var(--green); }
+        .btn-mpesa { background: #e60000; color: white; }
+        .btn-mpesa:hover { background: #cc0000; }
+        .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; width: auto; }
+
+        .loading {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid #fff; border-radius: 50%;
+            border-top-color: transparent; animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Cards & Lists */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+
+        .feature-card {
+            border: 1px solid var(--gray-200); border-radius: var(--radius);
+            padding: 1.25rem; transition: all 0.2s;
+        }
+
+        .feature-card:hover { border-color: var(--green); box-shadow: var(--shadow); }
+
+        .feature-card .icon-wrap {
+            width: 44px; height: 44px; border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; margin-bottom: 0.75rem;
+        }
+
+        .feature-card h4 { font-size: 1rem; margin-bottom: 0.35rem; }
+        .feature-card p { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.75rem; }
+
+        .tag {
+            display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 500;
+        }
+
+        .tag-green { background: #dcfce7; color: #166534; }
+        .tag-blue { background: #dbeafe; color: #1e40af; }
+        .tag-gold { background: #fef3c7; color: #92400e; }
+        .tag-red { background: #fee2e2; color: #991b1b; }
+
+        /* Price table */
+        .price-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        .price-table th, .price-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--gray-200); }
+        .price-table th { background: var(--gray-50); font-weight: 600; color: var(--gray-700); }
+        .price-up { color: var(--green); }
+        .price-down { color: var(--red); }
+
+        /* Notifications */
+        .notification-item {
+            padding: 0.75rem; background: #fef3c7; border-radius: 0.5rem;
+            border-left: 4px solid var(--gold); margin-bottom: 0.75rem;
+        }
+
+        .notification-item.sms { background: #dbeafe; border-left-color: var(--blue); }
+        .notification-item p { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.2rem; }
+        .notification-item span { font-size: 0.75rem; color: var(--gray-500); }
+
+        /* Results */
+        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .result-item { text-align: center; }
+        .result-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 0.75rem; font-size: 1.4rem; font-weight: bold;
+        }
+        .result-circle.yield { background: #dcfce7; color: #166534; }
+        .result-circle.confidence { background: #dbeafe; color: #1e40af; }
+        .result-label { font-size: 0.85rem; color: var(--gray-500); }
+
+        .factor-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.5rem; background: var(--gray-50); border-radius: 0.5rem; margin-bottom: 0.5rem;
+        }
+
+        .progress-bar { width: 60px; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--green); border-radius: 4px; }
+
+        .recommendation-list { list-style: none; }
+        .recommendation-list li {
+            display: flex; align-items: flex-start; gap: 0.5rem;
+            margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-700);
+        }
+        .recommendation-list li::before { content: "•"; color: var(--green); font-weight: bold; }
+
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .chart-container { position: relative; height: 250px; }
+
+        /* Officer & Group cards */
+        .person-card {
+            display: flex; gap: 1rem; align-items: flex-start;
+            padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--radius);
+        }
+
+        .avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; flex-shrink: 0;
+        }
+
+        .person-info h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .person-info p { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.35rem; }
+
+        /* M-Pesa */
+        .mpesa-banner {
+            background: linear-gradient(135deg, #e60000, #ff4444);
+            color: white; border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+
+        .mpesa-banner h3 { margin-bottom: 0.5rem; }
+        .mpesa-banner p { opacity: 0.9; font-size: 0.9rem; }
+
+        .loan-option {
+            border: 2px solid var(--gray-200); border-radius: var(--radius);
+            padding: 1.25rem; cursor: pointer; transition: all 0.2s;
+        }
+
+        .loan-option:hover, .loan-option.selected { border-color: #e60000; background: #fff5f5; }
+
+        .loan-option h4 { color: #e60000; margin-bottom: 0.35rem; }
+        .loan-option .amount { font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0; }
+
+        /* SMS settings */
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0; border-bottom: 1px solid var(--gray-100);
+        }
+
+        .toggle {
+            width: 44px; height: 24px; background: var(--gray-200);
+            border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s;
+        }
+
+        .toggle.on { background: var(--green); }
+        .toggle::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle.on::after { transform: translateX(20px); }
+
+        /* Community post */
+        .community-post {
+            padding: 1rem; border: 1px solid var(--gray-200);
+            border-radius: var(--radius); margin-bottom: 0.75rem;
+        }
+
+        .community-post .meta { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.5rem; }
+        .community-post .content { font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .community-post .actions { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--gray-500); }
+        .community-post .actions span { cursor: pointer; }
+        .community-post .actions span:hover { color: var(--green); }
+
+        /* Chatbot */
+        .chatbot-toggle {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            color: white; border: none; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            font-size: 1.5rem; z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        .chatbot-toggle:hover { transform: scale(1.05); }
+
+        .chatbot-panel {
+            position: fixed; bottom: 5.5rem; right: 1.5rem;
+            width: 380px; max-width: calc(100vw - 2rem);
+            height: 520px; max-height: calc(100vh - 7rem);
+            background: white; border-radius: var(--radius);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; z-index: 1000;
+            transform: scale(0.9) translateY(20px); opacity: 0;
+            pointer-events: none; transition: all 0.25s;
+        }
+
+        .chatbot-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            color: white; padding: 1rem 1.25rem; border-radius: var(--radius) var(--radius) 0 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .chat-header h3 { font-size: 1rem; }
+        .chat-header p { font-size: 0.75rem; opacity: 0.85; }
+
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 1rem;
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+
+        .chat-msg {
+            max-width: 85%; padding: 0.65rem 0.9rem; border-radius: 1rem;
+            font-size: 0.85rem; line-height: 1.45;
+        }
+
+        .chat-msg.bot {
+            background: var(--gray-100); color: var(--gray-900);
+            align-self: flex-start; border-bottom-left-radius: 0.25rem;
+        }
+
+        .chat-msg.user {
+            background: var(--green); color: white;
+            align-self: flex-end; border-bottom-right-radius: 0.25rem;
+        }
+
+        .chat-suggestions {
+            display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0 1rem 0.5rem;
+        }
+
+        .chat-suggestion {
+            padding: 0.35rem 0.65rem; background: var(--gray-50);
+            border: 1px solid var(--gray-200); border-radius: 999px;
+            font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+        }
+
+        .chat-suggestion:hover { border-color: var(--green); color: var(--green); }
+
+        .chat-input-area {
+            padding: 0.75rem; border-top: 1px solid var(--gray-200);
+            display: flex; gap: 0.5rem;
+        }
+
+        .chat-input-area input {
+            flex: 1; padding: 0.6rem 0.9rem; border: 1px solid var(--gray-200);
+            border-radius: 999px; font-size: 0.85rem;
+        }
+
+        .chat-input-area input:focus { outline: none; border-color: var(--green); }
+
+        .chat-send {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--green); color: white; border: none; cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        .footer {
+            text-align: center; margin-top: 2rem; padding: 1rem;
+            color: var(--gray-500); font-size: 0.85rem;
+        }
+
+        .toast {
+            position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--gray-900); color: white; padding: 0.75rem 1.5rem;
+            border-radius: 999px; font-size: 0.875rem; z-index: 2000;
+            opacity: 0; transition: all 0.3s; pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 768px) {
+            .main-grid, .two-col, .charts-grid, .results-grid { grid-template-columns: 1fr; }
+            .chatbot-panel { right: 1rem; left: 1rem; width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo"><i class="fas fa-seedling"></i></div>
+                <div class="logo-text">
+                    <h1>AgriPulse Lesotho</h1>
+                    <p>Smart Farming for Basotho Farmers</p>
+                    <span class="sesotho">Temo ea Mahlale</span>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="selected-district">Maseru</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <span>Thabo Molapo</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+266 58883700</span>
+                </div>
+                <div class="notification-badge" onclick="switchSection('sms-alerts')">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notification-count">4</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <button class="nav-tab active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</button>
+            <button class="nav-tab" data-section="sms-alerts"><i class="fas fa-sms"></i> SMS Alerts</button>
+            <button class="nav-tab" data-section="market"><i class="fas fa-chart-bar"></i> Market Prices</button>
+            <button class="nav-tab" data-section="marketplace"><i class="fas fa-store"></i> Buyers</button>
+            <button class="nav-tab" data-section="mpesa"><i class="fas fa-mobile-alt"></i> M-Pesa Finance</button>
+            <button class="nav-tab" data-section="officers"><i class="fas fa-user-tie"></i> Extension Officers</button>
+            <button class="nav-tab" data-section="community"><i class="fas fa-users"></i> Community</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- ========== DASHBOARD ========== -->
+        <section id="dashboard" class="section active">
+            <div class="weather-grid">
+                <div class="weather-card">
+                    <div class="weather-icon temperature"><i class="fas fa-thermometer-half"></i></div>
+                    <div class="weather-info"><h3>Temperature / Mocheso</h3><p id="temperature">18°C</p></div>
+                </div>
+                <div class="weather-card">
+                    <div class="weather-icon humidity"><i class="fas fa-tint"></i></div>
+                    <div class="weather-info"><h3>Humidity / Mongobo</h3><p id="humidity">62%</p></div>
+                </div>
+                <div class="weather-card">
+                    <div class="weather-icon wind"><i class="fas fa-wind"></i></div>
+                    <div class="weather-info"><h3>Wind Speed / Sekhahla sa Moea</h3><p id="wind-speed">14 km/h</p></div>
+                </div>
+                <div class="weather-card">
+                    <div class="weather-icon rainfall"><i class="fas fa-cloud-rain"></i></div>
+                    <div class="weather-info"><h3>Rainfall / Pula</h3><p id="rainfall">22mm</p></div>
+                </div>
+                <div class="weather-card">
+                    <div class="weather-icon conditions"><i class="fas fa-cloud-sun"></i></div>
+                    <div class="weather-info"><h3>Conditions / Maemo</h3><p id="conditions">Partly Cloudy</p></div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="left-column">
+                    <div class="panel">
+                        <h2 class="panel-title"><i class="fas fa-chart-line" style="color:var(--green)"></i> Yield Prediction</h2>
+                        <p class="panel-subtitle">Bolipi ba Tlhahiso — Predict your harvest in Lesotho</p>
+
+                        <div class="form-group">
+                            <label for="crop-select">Crop / Lijalo</label>
+                            <select id="crop-select">
+                                <option value="Maize">Maize (Papa)</option>
+                                <option value="Sorghum">Sorghum (Mabele)</option>
+                                <option value="Wheat">Wheat</option>
+                                <option value="Beans">Beans (Linaoa)</option>
+                                <option value="Peas">Peas</option>
+                                <option value="Potatoes">Potatoes</option>
+                                <option value="Cabbage">Cabbage</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="district-select">District / Setereke</label>
+                            <select id="district-select">
+                                <option value="Maseru">Maseru</option>
+                                <option value="Berea">Berea</option>
+                                <option value="Leribe">Leribe</option>
+                                <option value="Mafeteng">Mafeteng</option>
+                                <option value="Mohale's Hoek">Mohale's Hoek</option>
+                                <option value="Quthing">Quthing</option>
+                                <option value="Qacha's Nek">Qacha's Nek</option>
+                                <option value="Mokhotlong">Mokhotlong</option>
+                                <option value="Thaba-Tseka">Thaba-Tseka</option>
+                                <option value="Butha-Buthe">Butha-Buthe</option>
+                            </select>
+                        </div>
+
+                        <button id="predict-btn" class="btn btn-primary">Generate Prediction</button>
+                    </div>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><i class="fas fa-bell" style="color:var(--gold)"></i> Recent Alerts</h3>
+                        <div id="notifications-container">
+                            <div class="notification-item sms">
+                                <p><i class="fas fa-sms"></i> SMS: Frost warning for Mokhotlong highlands tonight</p>
+                                <span>1 hour ago · Vodacom Lesotho</span>
+                            </div>
+                            <div class="notification-item">
+                                <p>Heavy rainfall expected in Berea — check drainage channels</p>
+                                <span>3 hours ago</span>
+                            </div>
+                            <div class="notification-item">
+                                <p>Maize price up 8% at Maseru Market — good time to sell</p>
+                                <span>Yesterday</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div id="results-panel" class="panel hidden">
+                        <h3 class="panel-title">Prediction Results</h3>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-circle yield"><span id="yield-estimate">0</span></div>
+                                <p class="result-label">Predicted Yield</p>
+                                <p class="result-value">tonnes/hectare</p>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-circle confidence"><span id="confidence-level">0%</span></div>
+                                <p class="result-label">Confidence Level</p>
+                                <p class="result-value">Model Accuracy</p>
+                            </div>
+                        </div>
+                        <h4 style="font-weight:600;margin-bottom:0.75rem">Key Factors</h4>
+                        <div id="factors-container"></div>
+                        <h4 style="font-weight:600;margin:1.5rem 0 0.75rem">Recommendations</h4>
+                        <ul id="recommendations-container" class="recommendation-list"></ul>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="panel">
+                            <h3 class="panel-title" style="margin-bottom:1rem">Seasonal Weather — Lesotho</h3>
+                            <div class="chart-container"><canvas id="weather-chart"></canvas></div>
+                        </div>
+                        <div class="panel">
+                            <h3 class="panel-title" style="margin-bottom:1rem">Yield History</h3>
+                            <div class="chart-container"><canvas id="yield-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SMS ALERTS ========== -->
+        <section id="sms-alerts" class="section">
+            <div class="two-col">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-sms" style="color:var(--blue)"></i> Weather SMS Alerts</h2>
+                    <p class="panel-subtitle">Receive weather warnings on your phone via Vodacom Lesotho</p>
+
+                    <div class="form-group">
+                        <label for="sms-phone">Mobile Number</label>
+                        <input type="tel" id="sms-phone" value="+266 58XX XXXX" placeholder="+266 5XXX XXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sms-district">Alert District</label>
+                        <select id="sms-district">
+                            <option>Maseru</option><option>Berea</option><option>Leribe</option>
+                            <option>Mafeteng</option><option>Mohale's Hoek</option><option>Quthing</option>
+                            <option>Qacha's Nek</option><option>Mokhotlong</option><option>Thaba-Tseka</option>
+                            <option>Butha-Buthe</option>
+                        </select>
+                    </div>
+
+                    <h4 style="font-size:0.9rem;margin:1rem 0 0.5rem">Alert Types</h4>
+                    <div class="toggle-row">
+                        <span><i class="fas fa-cloud-rain"></i> Heavy Rainfall / Pula e ngata</span>
+                        <div class="toggle on" data-toggle="rain"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <span><i class="fas fa-snowflake"></i> Frost / Serame</span>
+                        <div class="toggle on" data-toggle="frost"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <span><i class="fas fa-sun"></i> Drought / Serame sa pula</span>
+                        <div class="toggle on" data-toggle="drought"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <span><i class="fas fa-wind"></i> Strong Winds / Moea o matla</span>
+                        <div class="toggle" data-toggle="wind"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <span><i class="fas fa-bug"></i> Pest Outbreak Alerts</span>
+                        <div class="toggle on" data-toggle="pest"></div>
+                    </div>
+
+                    <button class="btn btn-blue" style="width:100%;margin-top:1rem" onclick="saveSmsSettings()">
+                        <i class="fas fa-save"></i> Save SMS Preferences
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <h3 class="panel-title"><i class="fas fa-inbox"></i> SMS History</h3>
+                    <div id="sms-history">
+                        <div class="notification-item sms">
+                            <p><strong>AgriPulse:</strong> FROST ALERT — Mokhotlong: Temperatures may drop to -3°C tonight. Cover seedlings and livestock.</p>
+                            <span>Today, 06:00 · Delivered</span>
+                        </div>
+                        <div class="notification-item sms">
+                            <p><strong>AgriPulse:</strong> RAIN ALERT — Berea: 45mm expected Wed–Thu. Ensure field drainage is clear.</p>
+                            <span>Mon, 14:30 · Delivered</span>
+                        </div>
+                        <div class="notification-item sms">
+                            <p><strong>AgriPulse:</strong> PEST ALERT — Fall armyworm detected in Mafeteng district. Inspect maize crops immediately.</p>
+                            <span>Last week · Delivered</span>
+                        </div>
+                        <div class="notification-item sms">
+                            <p><strong>AgriPulse:</strong> DROUGHT WATCH — Quthing: Below-average rainfall for 3 weeks. Consider water conservation.</p>
+                            <span>2 weeks ago · Delivered</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline btn-sm" style="margin-top:1rem" onclick="sendTestSms()">
+                        <i class="fas fa-paper-plane"></i> Send Test SMS
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== MARKET PRICES ========== -->
+        <section id="market" class="section">
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-chart-bar" style="color:var(--green)"></i> Lesotho Market Prices</h2>
+                <p class="panel-subtitle">Live prices at Maseru Central Market &amp; district markets — updated daily (LSL/kg)</p>
+
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th>Crop / Lijalo</th>
+                            <th>Maseru Market</th>
+                            <th>Leribe</th>
+                            <th>Mafeteng</th>
+                            <th>Change (7d)</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="price-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="two-col">
+                <div class="panel">
+                    <h3 class="panel-title">Price Trends — Maize (Papa)</h3>
+                    <div class="chart-container"><canvas id="price-chart"></canvas></div>
+                </div>
+                <div class="panel">
+                    <h3 class="panel-title">Best Time to Sell</h3>
+                    <div class="feature-card" style="border:none;padding:0">
+                        <p style="margin-bottom:1rem;font-size:0.9rem">Based on 5-year seasonal patterns in Lesotho:</p>
+                        <div class="notification-item" style="background:#dcfce7;border-color:var(--green)">
+                            <p><strong>Maize:</strong> Peak prices in May–July (post-harvest shortage). Current price is 8% above average.</p>
+                        </div>
+                        <div class="notification-item" style="background:#dbeafe;border-color:var(--blue)">
+                            <p><strong>Beans:</strong> Prices rising ahead of winter demand. Consider holding 2–3 weeks.</p>
+                        </div>
+                        <div class="notification-item">
+                            <p><strong>Potatoes:</strong> Harvest season in Leribe — prices may dip. Sell within 2 weeks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== BUYER MARKETPLACE ========== -->
+        <section id="marketplace" class="section">
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-store" style="color:var(--green)"></i> Buyer Marketplace</h2>
+                <p class="panel-subtitle">Connect with verified buyers across Lesotho and South Africa</p>
+
+                <div class="form-group" style="max-width:400px;margin-bottom:1.5rem">
+                    <label>Filter by crop</label>
+                    <select id="buyer-filter" onchange="renderBuyers()">
+                        <option value="all">All Crops</option>
+                        <option value="Maize">Maize</option>
+                        <option value="Beans">Beans</option>
+                        <option value="Potatoes">Potatoes</option>
+                        <option value="Wheat">Wheat</option>
+                        <option value="Vegetables">Vegetables</option>
+                    </select>
+                </div>
+
+                <div class="card-grid" id="buyers-container"></div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title"><i class="fas fa-plus-circle"></i> List Your Produce</h3>
+                <div class="two-col">
+                    <div class="form-group">
+                        <label>Crop</label>
+                        <select id="list-crop"><option>Maize</option><option>Beans</option><option>Potatoes</option><option>Wheat</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity (kg)</label>
+                        <input type="number" id="list-qty" placeholder="e.g. 500">
+                    </div>
+                    <div class="form-group">
+                        <label>Asking Price (LSL/kg)</label>
+                        <input type="number" id="list-price" placeholder="e.g. 8.50" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>District</label>
+                        <select id="list-district"><option>Maseru</option><option>Leribe</option><option>Mafeteng</option><option>Berea</option></select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="max-width:300px" onclick="listProduce()">
+                    <i class="fas fa-upload"></i> Post Listing
+                </button>
+            </div>
+        </section>
+
+        <!-- ========== M-PESA FINANCING ========== -->
+        <section id="mpesa" class="section">
+            <div class="mpesa-banner">
+                <h3><i class="fas fa-mobile-alt"></i> M-Pesa Input Financing</h3>
+                <p>Get seeds, fertilizer, and tools now — repay after harvest via Vodacom M-Pesa Lesotho</p>
+            </div>
+
+            <div class="three-col">
+                <div class="loan-option" onclick="selectLoan(this, 500)">
+                    <h4>Starter Pack</h4>
+                    <div class="amount">LSL 500</div>
+                    <p style="font-size:0.85rem;color:var(--gray-500)">Seeds + basic fertilizer for 0.5 ha</p>
+                    <span class="tag tag-green">0% interest · 6 months</span>
+                </div>
+                <div class="loan-option selected" onclick="selectLoan(this, 1500)">
+                    <h4>Growth Pack</h4>
+                    <div class="amount">LSL 1,500</div>
+                    <p style="font-size:0.85rem;color:var(--gray-500)">Full inputs for 1 ha maize crop</p>
+                    <span class="tag tag-blue">5% interest · 9 months</span>
+                </div>
+                <div class="loan-option" onclick="selectLoan(this, 5000)">
+                    <h4>Commercial Pack</h4>
+                    <div class="amount">LSL 5,000</div>
+                    <p style="font-size:0.85rem;color:var(--gray-500)">Irrigation + inputs for 3 ha</p>
+                    <span class="tag tag-gold">8% interest · 12 months</span>
+                </div>
+            </div>
+
+            <div class="two-col" style="margin-top:1.5rem">
+                <div class="panel">
+                    <h3 class="panel-title"><i class="fas fa-file-invoice-dollar"></i> Apply for Financing</h3>
+                    <div class="form-group">
+                        <label>M-Pesa Number</label>
+                        <input type="tel" id="mpesa-phone" value="+266 58XX XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Package</label>
+                        <input type="text" id="mpesa-amount" value="LSL 1,500 — Growth Pack" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Purpose</label>
+                        <select id="mpesa-purpose">
+                            <option>Maize seeds &amp; fertilizer</option>
+                            <option>Bean seeds &amp; pesticides</option>
+                            <option>Drip irrigation kit</option>
+                            <option>Tractor hire</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-mpesa" style="width:100%" onclick="applyMpesa()">
+                        <i class="fas fa-check-circle"></i> Apply via M-Pesa
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <h3 class="panel-title"><i class="fas fa-history"></i> Your M-Pesa Transactions</h3>
+                    <div id="mpesa-history">
+                        <div class="factor-item">
+                            <span><i class="fas fa-arrow-down" style="color:var(--green)"></i> Input credit received</span>
+                            <span style="font-weight:600">+LSL 1,500</span>
+                        </div>
+                        <div class="factor-item">
+                            <span><i class="fas fa-seedling" style="color:var(--green)"></i> Maize seeds — Agritech Maseru</span>
+                            <span>-LSL 450</span>
+                        </div>
+                        <div class="factor-item">
+                            <span><i class="fas fa-flask" style="color:var(--blue)"></i> NPK Fertilizer 50kg</span>
+                            <span>-LSL 680</span>
+                        </div>
+                        <div class="factor-item">
+                            <span><i class="fas fa-arrow-up" style="color:var(--gold)"></i> Repayment due (Sep 2026)</span>
+                            <span style="font-weight:600;color:var(--gold)">LSL 370</span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.8rem;color:var(--gray-500);margin-top:1rem">
+                        <i class="fas fa-shield-alt"></i> Secured by harvest pledge · Partnered with Vodacom M-Pesa Lesotho
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== EXTENSION OFFICERS ========== -->
+        <section id="officers" class="section">
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-user-tie" style="color:var(--blue)"></i> Extension Officer Network</h2>
+                <p class="panel-subtitle">Ministry of Agriculture, Food Security &amp; Nutrition — Lesotho field officers</p>
+
+                <div class="form-group" style="max-width:300px;margin-bottom:1.5rem">
+                    <label>Filter by district</label>
+                    <select id="officer-filter" onchange="renderOfficers()">
+                        <option value="all">All Districts</option>
+                        <option value="Maseru">Maseru</option>
+                        <option value="Berea">Berea</option>
+                        <option value="Leribe">Leribe</option>
+                        <option value="Mafeteng">Mafeteng</option>
+                        <option value="Mokhotlong">Mokhotlong</option>
+                    </select>
+                </div>
+
+                <div class="card-grid" id="officers-container"></div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title"><i class="fas fa-calendar-check"></i> Request a Field Visit</h3>
+                <div class="two-col">
+                    <div class="form-group">
+                        <label>Officer</label>
+                        <select id="visit-officer"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred Date</label>
+                        <input type="date" id="visit-date">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Issue / Topic</label>
+                        <textarea id="visit-topic" rows="3" placeholder="e.g. Maize pest inspection, soil testing, irrigation advice..."></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-blue" style="max-width:300px" onclick="requestVisit()">
+                    <i class="fas fa-paper-plane"></i> Request Visit
+                </button>
+            </div>
+        </section>
+
+        <!-- ========== COMMUNITY ========== -->
+        <section id="community" class="section">
+            <div class="two-col">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-users" style="color:var(--green)"></i> Farmer Community Groups</h2>
+                    <p class="panel-subtitle">Join cooperatives and share knowledge with fellow Basotho farmers</p>
+                    <div id="groups-container"></div>
+                </div>
+
+                <div class="panel">
+                    <h3 class="panel-title"><i class="fas fa-comments"></i> Community Feed</h3>
+                    <div class="form-group">
+                        <textarea id="post-content" rows="3" placeholder="Share a tip, ask a question, or post about your harvest..."></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="createPost()"><i class="fas fa-pen"></i> Post</button>
+                    <div id="feed-container" style="margin-top:1.5rem"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>🌱 Supporting SDG 2: Zero Hunger · Empowering Basotho smallholder farmers across all 10 districts</p>
+        <p style="margin-top:0.25rem;font-size:0.75rem">Re tšehetsa balimi ba Lesotho ka boiqapelo ba AI le M-Pesa</p>
+    </footer>
+
+    <!-- Chatbot -->
+    <button class="chatbot-toggle" id="chatbot-toggle" aria-label="Open chatbot">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div class="chatbot-panel" id="chatbot-panel">
+        <div class="chat-header">
+            <div>
+                <h3><i class="fas fa-robot"></i> AgriPulse Assistant</h3>
+                <p>Mothusi oa hau · Your farming helper</p>
+            </div>
+            <button style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem" onclick="toggleChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-suggestions" id="chat-suggestions"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask about crops, weather, M-Pesa..." autocomplete="off">
+            <button class="chat-send" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== STATE =====
+        let app = {
+            selectedCrop: 'Maize',
+            selectedDistrict: 'Maseru',
+            isLoading: false,
+            weatherChart: null,
+            yieldChart: null,
+            priceChart: null,
+            selectedLoan: 1500,
+            chatOpen: false
+        };
+
+        // ===== LESOTHO DATA =====
+        const weatherData = [
+            { month: 'Jan', rainfall: 120, temperature: 22 },
+            { month: 'Feb', rainfall: 95, temperature: 21 },
+            { month: 'Mar', rainfall: 78, temperature: 19 },
+            { month: 'Apr', rainfall: 45, temperature: 16 },
+            { month: 'May', rainfall: 22, temperature: 12 },
+            { month: 'Jun', rainfall: 12, temperature: 8 },
+            { month: 'Jul', rainfall: 8, temperature: 7 },
+            { month: 'Aug', rainfall: 15, temperature: 10 },
+            { month: 'Sep', rainfall: 28, temperature: 14 },
+            { month: 'Oct', rainfall: 55, temperature: 17 },
+            { month: 'Nov', rainfall: 85, temperature: 19 },
+            { month: 'Dec', rainfall: 110, temperature: 21 }
+        ];
+
+        const yieldHistory = [
+            { year: '2020', predicted: 1.8, actual: 1.6 },
+            { year: '2021', predicted: 2.0, actual: 2.1 },
+            { year: '2022', predicted: 2.3, actual: 2.2 },
+            { year: '2023', predicted: 2.6, actual: 2.7 },
+            { year: '2024', predicted: 2.9, actual: 2.8 },
+            { year: '2025', predicted: 3.1, actual: 3.0 }
+        ];
+
+        const marketPrices = [
+            { crop: 'Maize (Papa)', maseru: 8.50, leribe: 8.20, mafeteng: 8.35, change: 8, trend: 'up' },
+            { crop: 'Sorghum (Mabele)', maseru: 7.80, leribe: 7.50, mafeteng: 7.65, change: 3, trend: 'up' },
+            { crop: 'Beans (Linaoa)', maseru: 12.40, leribe: 12.00, mafeteng: 11.80, change: 5, trend: 'up' },
+            { crop: 'Wheat', maseru: 6.90, leribe: 6.70, mafeteng: 6.85, change: -2, trend: 'down' },
+            { crop: 'Potatoes', maseru: 5.50, leribe: 4.80, mafeteng: 5.20, change: -6, trend: 'down' },
+            { crop: 'Peas', maseru: 9.20, leribe: 8.90, mafeteng: 9.00, change: 1, trend: 'up' },
+            { crop: 'Cabbage', maseru: 4.50, leribe: 4.20, mafeteng: 4.35, change: 0, trend: 'flat' }
+        ];
+
+        const buyers = [
+            { name: 'Maseru Fresh Foods', crop: 'Maize', price: 8.80, qty: '500+ kg', location: 'Maseru Industrial Area', verified: true },
+            { name: 'Leribe Agro Co-op', crop: 'Beans', price: 12.50, qty: '200+ kg', location: 'Leribe Town', verified: true },
+            { name: 'Basotho Grain Traders', crop: 'Maize', price: 8.60, qty: '1000+ kg', location: 'Mafeteng', verified: true },
+            { name: 'SA Cross-Border Export', crop: 'Wheat', price: 7.20, qty: '2000+ kg', location: 'Ficksburg Border (SA)', verified: true },
+            { name: 'Veggie Basket Lesotho', crop: 'Vegetables', price: 5.00, qty: '100+ kg', location: 'Maseru Market', verified: false },
+            { name: 'Highlands Potato Buyers', crop: 'Potatoes', price: 5.80, qty: '300+ kg', location: 'Mokhotlong', verified: true },
+            { name: 'Berea Farmers Union', crop: 'Maize', price: 8.40, qty: 'Any quantity', location: 'Berea', verified: true },
+            { name: 'Quthing Organic Market', crop: 'Beans', price: 13.00, qty: '150+ kg', location: 'Quthing', verified: true }
+        ];
+
+        const officers = [
+            { name: 'Ntate Thabo Mokoena', district: 'Maseru', specialty: 'Maize & soil health', phone: '+266 58XX XXXX', available: true },
+            { name: 'Mme Lerato Sehloho', district: 'Berea', specialty: 'Vegetables & irrigation', phone: '+266 59XX XXXX', available: true },
+            { name: 'Ntate Khotso Ntsane', district: 'Leribe', specialty: 'Pest management', phone: '+266 56XX XXXX', available: false },
+            { name: 'Mme Palesa Molapo', district: 'Mafeteng', specialty: 'Beans & legumes', phone: '+266 57XX XXXX', available: true },
+            { name: 'Ntate Motlatsi Ramabele', district: 'Mokhotlong', specialty: 'Highland crops & frost', phone: '+266 55XX XXXX', available: true },
+            { name: 'Mme Nthabiseng Letsie', district: 'Quthing', specialty: 'Drought-resistant crops', phone: '+266 54XX XXXX', available: true }
+        ];
+
+        const groups = [
+            { name: 'Maseru Maize Growers', members: 245, district: 'Maseru', topic: 'Maize farming techniques' },
+            { name: 'Berea Women Farmers', members: 128, district: 'Berea', topic: 'Vegetables & market access' },
+            { name: 'Leribe Youth Agripreneurs', members: 89, district: 'Leribe', topic: 'Modern farming & tech' },
+            { name: 'Highlands Farmers Alliance', members: 67, district: 'Mokhotlong', topic: 'High-altitude crop strategies' },
+            { name: 'Mohale\'s Hoek Cooperatives', members: 156, district: 'Mohale\'s Hoek', topic: 'Collective buying & selling' }
+        ];
+
+        let communityFeed = [
+            { author: 'Mme Lerato', district: 'Berea', time: '2 hours ago', content: 'Just harvested 800kg of beans! Best season in 3 years thanks to the SMS frost alerts 🌱', likes: 24 },
+            { author: 'Ntate Khotso', district: 'Leribe', time: '5 hours ago', content: 'Anyone know where to get affordable NPK fertilizer in Leribe? M-Pesa financing helped me last season.', likes: 12 },
+            { author: 'Palesa M.', district: 'Maseru', time: 'Yesterday', content: 'Tip: Plant maize after first good rains in November for best yields in lowlands. Extension officer confirmed this!', likes: 31 },
+            { author: 'Thabo Molapo', district: 'Maseru', time: '2 days ago', content: 'Used AgriPulse yield prediction — forecast was 2.8 t/ha, got 2.7! Pretty accurate for my field.', likes: 18 }
+        ];
+
+        const chatSuggestions = [
+            'Maize planting tips', 'Weather this week', 'Market prices', 'M-Pesa loan', 'Find extension officer', 'Pest help'
+        ];
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            initNav();
+            initEventListeners();
+            initCharts();
+            renderPriceTable();
+            renderBuyers();
+            renderOfficers();
+            renderGroups();
+            renderFeed();
+            initChatbot();
+            initToggles();
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('visit-date').value = tomorrow.toISOString().split('T')[0];
+        });
+
+        // ===== NAVIGATION =====
+        function initNav() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchSection(tab.dataset.section));
+            });
+        }
+
+        function switchSection(id) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.section === id));
+            document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
+        }
+
+        // ===== EVENT LISTENERS =====
+        function initEventListeners() {
+            document.getElementById('crop-select').addEventListener('change', e => app.selectedCrop = e.target.value);
+            document.getElementById('district-select').addEventListener('change', e => {
+                app.selectedDistrict = e.target.value;
+                document.getElementById('selected-district').textContent = e.target.value;
+            });
+            document.getElementById('predict-btn').addEventListener('click', generatePrediction);
+            document.getElementById('chatbot-toggle').addEventListener('click', toggleChatbot);
+            document.getElementById('chat-input').addEventListener('keypress', e => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+        }
+
+        function initToggles() {
+            document.querySelectorAll('.toggle').forEach(t => {
+                t.addEventListener('click', () => t.classList.toggle('on'));
+            });
+        }
+
+        // ===== CHARTS =====
+        function initCharts() {
+            initWeatherChart();
+            initYieldChart();
+            initPriceChart();
+        }
+
+        function initWeatherChart() {
+            const ctx = document.getElementById('weather-chart').getContext('2d');
+            app.weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weatherData.map(d => d.month),
+                    datasets: [
+                        { label: 'Rainfall (mm)', data: weatherData.map(d => d.rainfall), borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true },
+                        { label: 'Temperature (°C)', data: weatherData.map(d => d.temperature), borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.4, fill: true }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function initYieldChart() {
+            const ctx = document.getElementById('yield-chart').getContext('2d');
+            app.yieldChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: yieldHistory.map(d => d.year),
+                    datasets: [
+                        { label: 'Predicted', data: yieldHistory.map(d => d.predicted), backgroundColor: '#10B981' },
+                        { label: 'Actual', data: yieldHistory.map(d => d.actual), backgroundColor: '#3B82F6' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Yield (t/ha)' } } } }
+            });
+        }
+
+        function initPriceChart() {
+            const ctx = document.getElementById('price-chart').getContext('2d');
+            app.priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Maize Price (LSL/kg)',
+                        data: [7.2, 7.5, 7.8, 8.0, 8.3, 8.5],
+                        borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', tension: 0.4, fill: true
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // ===== YIELD PREDICTION =====
+        function generatePrediction() {
+            if (app.isLoading) return;
+            app.isLoading = true;
+            const btn = document.getElementById('predict-btn');
+            btn.innerHTML = '<span class="loading"></span> Analyzing...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                const districtFactor = { 'Mokhotlong': 0.7, 'Thaba-Tseka': 0.75, 'Qacha\'s Nek': 0.8, 'Maseru': 1.0, 'Berea': 1.05, 'Leribe': 1.1 }[app.selectedDistrict] || 0.95;
+                const cropBase = { 'Maize': 2.5, 'Sorghum': 2.0, 'Wheat': 2.2, 'Beans': 1.5, 'Peas': 1.3, 'Potatoes': 18, 'Cabbage': 12 }[app.selectedCrop] || 2.0;
+                const isRoot = ['Potatoes', 'Cabbage'].includes(app.selectedCrop);
+                const yieldEst = (cropBase * districtFactor * (0.9 + Math.random() * 0.2)).toFixed(isRoot ? 0 : 1);
+
+                displayPredictionResults({
+                    yieldEstimate: yieldEst,
+                    confidence: Math.floor(Math.random() * 15 + 82),
+                    factors: [
+                        { name: 'Rainfall (Pula)', impact: app.selectedDistrict === 'Quthing' ? 'Below avg' : 'Adequate', score: 78 },
+                        { name: 'Altitude / Boemo', impact: ['Mokhotlong','Thaba-Tseka'].includes(app.selectedDistrict) ? 'Highland' : 'Lowland', score: 72 },
+                        { name: 'Soil Quality', impact: 'Moderate', score: 75 },
+                        { name: 'Frost Risk / Serame', impact: ['Mokhotlong','Butha-Buthe'].includes(app.selectedDistrict) ? 'High' : 'Low', score: ['Mokhotlong','Butha-Buthe'].includes(app.selectedDistrict) ? 55 : 90 }
+                    ],
+                    recommendations: getCropRecommendations(app.selectedCrop, app.selectedDistrict)
+                });
+
+                app.isLoading = false;
+                btn.innerHTML = 'Generate Prediction';
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        function getCropRecommendations(crop, district) {
+            const recs = {
+                'Maize': ['Plant after first rains (Nov) in lowlands, Dec in highlands', 'Apply top-dressing nitrogen at knee height', 'Watch for fall armyworm — contact extension officer if spotted'],
+                'Sorghum': ['Ideal for drought-prone Quthing and Mohale\'s Hoek', 'Plant early to avoid late frost in highlands', 'Requires less water than maize — good for water-stressed areas'],
+                'Beans': ['Intercrop with maize for nitrogen fixation', 'Harvest before heavy rains to prevent pod rot', 'Current market price is favorable — plan for May sale'],
+                'Potatoes': ['Plant in Sep–Oct in Leribe highlands', 'Ensure well-drained soil to prevent blight', 'Market prices dipping — sell within 2 weeks of harvest']
+            };
+            return recs[crop] || ['Monitor weather SMS alerts for your district', 'Consult your local extension officer', 'Consider M-Pesa financing for inputs if needed'];
+        }
+
+        function displayPredictionResults(prediction) {
+            document.getElementById('results-panel').classList.remove('hidden');
+            document.getElementById('yield-estimate').textContent = prediction.yieldEstimate;
+            document.getElementById('confidence-level').textContent = prediction.confidence + '%';
+
+            const factorsContainer = document.getElementById('factors-container');
+            factorsContainer.innerHTML = '';
+            prediction.factors.forEach(f => {
+                factorsContainer.innerHTML += `
+                    <div class="factor-item">
+                        <span class="factor-name">${f.name}</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem">
+                            <span style="font-size:0.85rem;color:var(--gray-500)">${f.impact}</span>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${f.score}%"></div></div>
+                        </div>
+                    </div>`;
+            });
+
+            const recContainer = document.getElementById('recommendations-container');
+            recContainer.innerHTML = '';
+            prediction.recommendations.forEach(r => {
+                recContainer.innerHTML += `<li>${r}</li>`;
+            });
+
+            document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ===== MARKET PRICES =====
+        function renderPriceTable() {
+            document.getElementById('price-table-body').innerHTML = marketPrices.map(p => `
+                <tr>
+                    <td><strong>${p.crop}</strong></td>
+                    <td>LSL ${p.maseru.toFixed(2)}</td>
+                    <td>LSL ${p.leribe.toFixed(2)}</td>
+                    <td>LSL ${p.mafeteng.toFixed(2)}</td>
+                    <td class="${p.change > 0 ? 'price-up' : p.change < 0 ? 'price-down' : ''}">${p.change > 0 ? '+' : ''}${p.change}%</td>
+                    <td>${p.trend === 'up' ? '📈' : p.trend === 'down' ? '📉' : '➡️'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ===== BUYERS =====
+        function renderBuyers() {
+            const filter = document.getElementById('buyer-filter').value;
+            const filtered = filter === 'all' ? buyers : buyers.filter(b => b.crop === filter);
+            document.getElementById('buyers-container').innerHTML = filtered.map(b => `
+                <div class="feature-card">
+                    <div class="icon-wrap" style="background:#dcfce7;color:var(--green)"><i class="fas fa-store"></i></div>
+                    <h4>${b.name} ${b.verified ? '<span class="tag tag-green">Verified</span>' : ''}</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> ${b.location}</p>
+                    <p>Buying: <strong>${b.crop}</strong> · Min: ${b.qty}</p>
+                    <p style="font-size:1.1rem;font-weight:bold;color:var(--green)">LSL ${b.price.toFixed(2)}/kg</p>
+                    <button class="btn btn-outline btn-sm" onclick="contactBuyer('${b.name}')"><i class="fas fa-phone"></i> Contact Buyer</button>
+                </div>
+            `).join('');
+        }
+
+        function contactBuyer(name) {
+            showToast(`Connecting you with ${name}... They will call +266 58XX XXXX shortly.`);
+        }
+
+        function listProduce() {
+            const crop = document.getElementById('list-crop').value;
+            const qty = document.getElementById('list-qty').value;
+            const price = document.getElementById('list-price').value;
+            if (!qty || !price) { showToast('Please fill in quantity and price.'); return; }
+            showToast(`Listed ${qty}kg of ${crop} at LSL ${price}/kg! Buyers will be notified via SMS.`);
+        }
+
+        // ===== M-PESA =====
+        function selectLoan(el, amount) {
+            document.querySelectorAll('.loan-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            app.selectedLoan = amount;
+            const label = el.querySelector('h4').textContent;
+            document.getElementById('mpesa-amount').value = `LSL ${amount.toLocaleString()} — ${label}`;
+        }
+
+        function applyMpesa() {
+            showToast(`M-Pesa application for LSL ${app.selectedLoan.toLocaleString()} submitted! You'll receive a confirmation SMS within 24 hours.`);
+        }
+
+        // ===== EXTENSION OFFICERS =====
+        function renderOfficers() {
+            const filter = document.getElementById('officer-filter').value;
+            const filtered = filter === 'all' ? officers : officers.filter(o => o.district === filter);
+
+            document.getElementById('officers-container').innerHTML = filtered.map(o => `
+                <div class="person-card">
+                    <div class="avatar">${o.name.split(' ')[1]?.[0] || 'O'}${o.name.split(' ')[2]?.[0] || ''}</div>
+                    <div class="person-info">
+                        <h4>${o.name}</h4>
+                        <p><i class="fas fa-map-marker-alt"></i> ${o.district} District</p>
+                        <p><i class="fas fa-leaf"></i> ${o.specialty}</p>
+                        <p><i class="fas fa-phone"></i> ${o.phone}</p>
+                        <span class="tag ${o.available ? 'tag-green' : 'tag-gold'}">${o.available ? 'Available' : 'Busy — next week'}</span>
+                        <button class="btn btn-outline btn-sm" style="margin-top:0.5rem" onclick="callOfficer('${o.name}')">
+                            <i class="fas fa-phone"></i> Call
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const select = document.getElementById('visit-officer');
+            select.innerHTML = officers.map(o => `<option>${o.name} — ${o.district}</option>`).join('');
+        }
+
+        function callOfficer(name) { showToast(`Calling ${name}...`); }
+        function requestVisit() {
+            const officer = document.getElementById('visit-officer').value;
+            showToast(`Field visit request sent to ${officer}. You'll receive an SMS confirmation.`);
+        }
+
+        // ===== COMMUNITY =====
+        function renderGroups() {
+            document.getElementById('groups-container').innerHTML = groups.map(g => `
+                <div class="feature-card" style="margin-bottom:0.75rem">
+                    <h4>${g.name}</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> ${g.district} · <i class="fas fa-users"></i> ${g.members} members</p>
+                    <p>${g.topic}</p>
+                    <button class="btn btn-primary btn-sm" onclick="joinGroup('${g.name}')"><i class="fas fa-user-plus"></i> Join Group</button>
+                </div>
+            `).join('');
+        }
+
+        function renderFeed() {
+            document.getElementById('feed-container').innerHTML = communityFeed.map((p, i) => `
+                <div class="community-post">
+                    <div class="meta"><strong>${p.author}</strong> · ${p.district} · ${p.time}</div>
+                    <div class="content">${p.content}</div>
+                    <div class="actions">
+                        <span onclick="likePost(${i})"><i class="fas fa-thumbs-up"></i> ${p.likes}</span>
+                        <span><i class="fas fa-comment"></i> Reply</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function joinGroup(name) { showToast(`Joined "${name}"! Welcome to the community.`); }
+
+        function createPost() {
+            const content = document.getElementById('post-content').value.trim();
+            if (!content) return;
+            communityFeed.unshift({ author: 'Thabo Molapo', district: 'Maseru', time: 'Just now', content, likes: 0 });
+            document.getElementById('post-content').value = '';
+            renderFeed();
+            showToast('Post shared with the community!');
+        }
+
+        function likePost(i) { communityFeed[i].likes++; renderFeed(); }
+
+        // ===== SMS =====
+        function saveSmsSettings() { showToast('SMS alert preferences saved! Alerts will be sent to +266 58XX XXXX.'); }
+        function sendTestSms() { showToast('Test SMS sent! Check your phone in a few seconds.'); }
+
+        // ===== CHATBOT =====
+        function initChatbot() {
+            const messages = document.getElementById('chat-messages');
+            messages.innerHTML = `<div class="chat-msg bot">Lumela! 👋 I'm your AgriPulse assistant. I can help with crop advice, weather alerts, market prices, M-Pesa financing, and connecting you with extension officers. What would you like to know?</div>`;
+
+            const suggestions = document.getElementById('chat-suggestions');
+            suggestions.innerHTML = chatSuggestions.map(s =>
+                `<button class="chat-suggestion" onclick="askSuggestion('${s}')">${s}</button>`
+            ).join('');
+        }
+
+        function toggleChatbot() {
+            app.chatOpen = !app.chatOpen;
+            document.getElementById('chatbot-panel').classList.toggle('open', app.chatOpen);
+        }
+
+        function askSuggestion(text) {
+            document.getElementById('chat-input').value = text;
+            sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messages = document.getElementById('chat-messages');
+            messages.innerHTML += `<div class="chat-msg user">${text}</div>`;
+            input.value = '';
+
+            setTimeout(() => {
+                const reply = getChatbotResponse(text);
+                messages.innerHTML += `<div class="chat-msg bot">${reply}</div>`;
+                messages.scrollTop = messages.scrollHeight;
+            }, 600);
+
+            messages.scrollTop = messages.scrollHeight;
+            if (!app.chatOpen) toggleChatbot();
+        }
+
+        function getChatbotResponse(text) {
+            const q = text.toLowerCase();
+
+            if (q.includes('maize') || q.includes('papa') || q.includes('plant'))
+                return 'For maize in Lesotho lowlands (Maseru, Berea, Mafeteng), plant after the first good rains in <strong>November</strong>. In highlands (Mokhotlong, Thaba-Tseka), wait until <strong>December</strong>. Apply basal fertilizer at planting and top-dress with nitrogen at knee height. Want me to check the current maize market price?';
+
+            if (q.includes('weather') || q.includes('rain') || q.includes('pula') || q.includes('frost') || q.includes('serame'))
+                return 'This week in Maseru: partly cloudy, 18°C, 22mm rainfall expected. ⚠️ <strong>Frost alert</strong> for Mokhotlong highlands tonight. Enable SMS alerts in the SMS Alerts tab to get warnings on your phone. Shall I explain how to set that up?';
+
+            if (q.includes('price') || q.includes('market') || q.includes('sell'))
+                return 'Current Lesotho market prices (LSL/kg):<br>• Maize: <strong>8.50</strong> (+8% this week) 📈<br>• Beans: <strong>12.40</strong> (+5%)<br>• Potatoes: <strong>5.50</strong> (-6%) 📉<br><br>Maize prices are above average — it\'s a good time to sell! Check the Market Prices tab for all districts.';
+
+            if (q.includes('m-pesa') || q.includes('mpesa') || q.includes('loan') || q.includes('finance') || q.includes('money'))
+                return 'AgriPulse offers input financing via <strong>Vodacom M-Pesa Lesotho</strong>:<br>• Starter Pack: LSL 500 (0% interest)<br>• Growth Pack: LSL 1,500 (5% interest)<br>• Commercial Pack: LSL 5,000 (8% interest)<br><br>Repay after harvest. Go to the M-Pesa Finance tab to apply!';
+
+            if (q.includes('officer') || q.includes('extension') || q.includes('help') || q.includes('visit'))
+                return 'I can connect you with a Ministry of Agriculture extension officer. For Maseru district, <strong>Ntate Thabo Mokoena</strong> specializes in maize & soil health and is available now. Go to the Extension Officers tab to request a field visit or call directly.';
+
+            if (q.includes('pest') || q.includes('worm') || q.includes('armyworm') || q.includes('bug'))
+                return '⚠️ Fall armyworm has been detected in Mafeteng district. Inspect maize crops for leaf damage and frass. Contact <strong>Ntate Khotso Ntsane</strong> (Leribe, pest management) or your local extension officer. Early treatment with approved pesticides is critical.';
+
+            if (q.includes('buyer') || q.includes('buy') || q.includes('sell'))
+                return 'The Buyer Marketplace has 8 verified buyers. Top offer for maize: <strong>Maseru Fresh Foods</strong> at LSL 8.80/kg (500+ kg). You can also list your own produce. Check the Buyers tab!';
+
+            if (q.includes('community') || q.includes('group') || q.includes('join'))
+                return 'Join farmer groups like <strong>Maseru Maize Growers</strong> (245 members) or <strong>Berea Women Farmers</strong> (128 members). Share tips, ask questions, and learn from fellow Basotho farmers in the Community tab.';
+
+            if (q.includes('sms') || q.includes('alert'))
+                return 'Set up weather SMS alerts in the SMS Alerts tab. Choose your district and alert types (rain, frost, drought, pests). Alerts are sent via Vodacom Lesotho to your registered number. Frost and pest alerts are especially important for highland farmers!';
+
+            if (q.includes('lumela') || q.includes('hello') || q.includes('hi') || q.includes('hey'))
+                return 'Lumela! 🌱 Welcome to AgriPulse Lesotho. I\'m here to help with farming advice, weather, market prices, M-Pesa financing, and more. What can I help you with today?';
+
+            return 'I can help with:<br>• <strong>Crop advice</strong> (maize, beans, sorghum...)<br>• <strong>Weather & SMS alerts</strong><br>• <strong>Market prices</strong> across Lesotho<br>• <strong>M-Pesa input financing</strong><br>• <strong>Extension officers</strong> & field visits<br>• <strong>Buyer marketplace</strong><br>• <strong>Community groups</strong><br><br>Try asking about any of these topics!';
+        }
+
+        // ===== UTILS =====
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Simulate live weather for Lesotho
+        setInterval(() => {
+            document.getElementById('temperature').textContent = (Math.floor(Math.random() * 8) + 14) + '°C';
+            document.getElementById('humidity').textContent = (Math.floor(Math.random() * 20) + 55) + '%';
+            document.getElementById('wind-speed').textContent = (Math.floor(Math.random() * 12) + 8) + ' km/h';
+            document.getElementById('rainfall').textContent = (Math.floor(Math.random() * 25) + 5) + 'mm';
+        }, 30000);
+    </script>
+</body>
+</html>
